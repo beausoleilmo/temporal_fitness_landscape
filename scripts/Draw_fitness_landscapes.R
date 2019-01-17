@@ -36,7 +36,6 @@ par(mfrow=c(3,4))
 for (i in 1:12) {
   plot(ores.beak[[i]],whichplots = 2, main2 = c(2005:2018)[i])
 }
-par(mfrow=c(1,1))
 
 par(mfrow= c(2,1))
 mydf = data.frame(y = newlist[[1]], x = newx)
