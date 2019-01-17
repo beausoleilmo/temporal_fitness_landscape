@@ -1,13 +1,19 @@
-# In this script, I calculate the logistic regressions and then extract the selection gradients. From that, I'll be able to get the values I necesitate to compute the gradients in function of the environmental variables  
+# # # # # # # # # # # # # # # # # # # # 
+# Author: Marc-Olivier Beausoleil 
+# Date: January 17, 2019
+# McGill University 
+# Analysis of the dynamics of Darwin's finches' fitness landscapes  
+# # # # # # # # # # # # # # # # # # # # 
 
 # Preparation of variables and data  --------------------------------------
 source('./scripts//initialize.R')
 source("./scripts/logit.r")
 source('./scripts/PCA_custom.R')
+load('./data/bird.data.RData', verbose=TRUE)
 
+# Select the variables to run the scripts ---------------------------------
 save.data = "./output/biotic.factors.on.survival_Andrew_meeting_changing_PCA_SCORE_for_only_fortis.RData"
 
-# Select the interesting years 
 sp.list <- c('fortis')
 yr = c(2004:2014,2016:2018)
 jump = 1
@@ -52,7 +58,6 @@ exp.lambda = exp(mean(c(-4,-5,-4,
                         -4,-4,-4,
                         -4,-4,-3,
                         -6,-13,0)))
-load('./data/bird.data.RData', verbose=TRUE)
 
 if(pdf.output){
   pdf("./output/my.pca.just.fortis.pdf",height = 6,width = 15)
@@ -173,7 +178,7 @@ if(find.peaks.and.valleys){
                       site.keep = site.list,
                       flip.pc1 = FALSE,
                       adults.only = FALSE, # If true, it'll keep only females and males (remove juveniles) 
-                      gr.sel = NULL,# "small" or "big", this is to create 2 groups in the fortis population. That way, I could see if selection is acting differently on the 2 fortis groups, # applicable for fortis only. This will let you select "big" or "small" morph
+                      gr.sel = NULL,# "small" or "big", this is to create 2 groups in the fortis population. # applicable for fortis only. This will let you select "big" or "small" morph
                       valley.fortis = FALSE, # If this is true, this term will find the valley (between the small morph of fortis and the big morph of fortis). You can run a model on these 2 after that
                       valley.fortis.fuli = FALSE, # If this is true, this term will find the valley (between fuliginosa and the small morph of fortis). You can run a model on these 2 after that
                       peaks.fortis.fuli = FALSE, # If this is true, this term will find the 2 peaks (of fuliginosa and the one for the small morph of fortis). You can run a model on these 2 after that
@@ -184,14 +189,10 @@ if(find.peaks.and.valleys){
                       gam.analysis = TRUE,
                       recalculate.pca = FALSE,
                       pca.per.sp.only = TRUE,
-                      K.nots = 5, # Manually select the number of knots  
-                      traits = c('PC1'))#, 'PC2')) # This is only for the spline 
-    if(!is.null(mdat$pca.recalc)){
-      custom_pca(mdat$pca.recalc, centered = TRUE)
-    }
-    custom_pca(res.pca.for, centered = TRUE)
+                      K.nots = 5, # Manually select the number of knots (for spline)
+                      traits = c('PC1')) # This is only for the spline 
+
     # This is to calcualte the GAM 
-    
     # getting response variable and the explanatory variable 
     y = as.vector(mdat$X[,2])
     x = c(mdat$ind.vars$pc1) # Works for everything execpt 2007-2008
@@ -213,8 +214,8 @@ if(find.peaks.and.valleys){
     
     model.list = c(model.list,list(z))
     
-    yr1 = substr(i+2003,3,4)
-    yr2 = substr(i+2003+jump,3,4)
+    yr1 = substr(i + 2003, 3, 4)
+    yr2 = substr(i + 2003 + jump, 3, 4)
     oldxlist = c(oldxlist, list(x))
     oldzlist = c(oldzlist, list(z$fitted.values))
     old_beak_L_list = c(old_beak_L_list, list(mbd))
@@ -253,7 +254,7 @@ if(find.peaks.and.valleys){
     lines(newx, upper, lty = 2)
     lines(newx, lower, lty = 2)
     
-    # find the minimum of the fitness function from the gam by clicking on BOTH sides of the highest visible peak and  the minimum value between the 2 peaks (valley) in the GAM  
+    # find the *minimum* of the fitness function from the gam by clicking on BOTH sides of the highest visible peak and  the minimum value between the 2 peaks (valley) in the GAM  
     midd  = locator(n = 2)
     # Starting from the left side, click right around the maximum of the fitness function. This will find the maximum value 
     peak  = locator(n = 4)
@@ -280,7 +281,7 @@ if(find.peaks.and.valleys){
     midd.list = c(local.max - local.min)
     
     # Make a record of all the expected response varaible from the evenly spaced X 
-    newlist <- c(newlist, list(yhat))
+    newlist = c(newlist, list(yhat))
     
     # Make a database for all these new varaibles 
     my.eco.evo.df=rbind(my.eco.evo.df,data.frame(mid = midd.list,
@@ -295,8 +296,6 @@ if(find.peaks.and.valleys){
                                                  sum.preci.yr2 = mdat$yr.vars$sum.rainfall.no.std[2]))
     
   }# End of for(i in 1:c(length(yr)-1)){
-  
-  # dev.off()
   
   eff = structure(c(36, 140, 212, 120, 52, 56, 
                     132, 300, 128, 120, 128, 
@@ -361,16 +360,12 @@ if(find.peaks.and.valleys){
 # Save finding peaks ------------------------------------------------------
 if(find.peaks.and.valleys){
   save(my.eco.evo.df,
-       lm.out1,
-       lm.out2,
+       lm.out1, lm.out2,
        newlist,
        newx,
        model.list,
-       oldxlist,
-       oldzlist,
-       old_beak_L_list,
-       old_beak_W_list,
-       old_beak_D_list,
+       oldxlist, oldzlist,
+       old_beak_L_list, old_beak_W_list, old_beak_D_list,
        old_band_list,
        survived.list,
        full.data,
