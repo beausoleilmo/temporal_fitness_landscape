@@ -4,7 +4,9 @@
 source('./scripts//initialize.R')
 source("./scripts/logit.r")
 source('./scripts/PCA_custom.R')
+
 save.data = "./output"
+
 # Select the interesting years 
 sp.list <- c('fortis')
 yr = c(2004:2014,2016:2018)
@@ -46,7 +48,10 @@ model.list = list()
 survived.list = list()
 
 # These were the relatively good values of lambda used 
-exp.lambda = exp(mean(c(-4,-5,-4,-4,-4,-4,-4,-4,-3,-6,-13,0)))
+exp.lambda = exp(mean(c(-4,-5,-4,
+                        -4,-4,-4,
+                        -4,-4,-3,
+                        -6,-13,0)))
 load('./data/bird.data.RData', verbose=TRUE)
 
 if(pdf.output){
@@ -231,9 +236,6 @@ if(find.peaks.and.valleys){
     z1 <- predict(z, 
                   newdata=list(x = newx), 
                   se.fit = TRUE)
-    
-    # Function that will transforme the Y values from linear scale to [0,1]
-    invlogit <- function(x){exp(x)/(exp(x) + 1)}
     
     # This is the actual transformed data 
     yhat <- invlogit(z1$fit)
@@ -459,7 +461,6 @@ for(i in 1:nrow(my.eco.evo.df)){
   final.df.new.analysis = c(final.df.new.analysis,list(new.analysis.all.years))
   
   # Preparing the data X (quadratic or not, orthongonal or not)
-  stderr <- function(x) sqrt(var(x,na.rm=TRUE)/length(na.omit(x)))
   if (standard.ized) {
     x.se = stderr(my.x)
     my.x = scale(my.x)
@@ -498,16 +499,7 @@ for(i in 1:nrow(my.eco.evo.df)){
                   list(table(y)))
   library("R2ucare")
   ch = cbind(x= rep(1,length(y)),y)
-  # table(apply(ch, 1, function(x) {paste(x,collapse = "")}))
   freq = rep(1,length(y))
-  # overall_CJS(ch,freq)
-  # test2cl(X = ch,freq)
-  # test2ct(X = ch,freq = freq)
-  # test3Gsm(ch, freq)
-  # test3Gsr(ch, freq)
-  # test3Gwbwa(ch, freq)
-  # test3sm(ch, freq)
-  # test3sr(ch, freq)
   
   model = glm(y ~ ., 
               family=binomial, 
@@ -542,9 +534,7 @@ for(i in 1:nrow(my.eco.evo.df)){
   
   
   # Compute Gradients -----------------------------------------
-  #### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### 
   # http://www.public.iastate.edu/~fjanzen/software/regress.htm
-  
   # To get better estimate of the linear selection gradient: run the models separately  (w = α + βx and then w = α + βx + γx^2)
   if (length(dim(x)) != 2) dim(x) <- c(length(x),1)
   # For the linear comparison 
@@ -609,7 +599,6 @@ for(i in 1:nrow(my.eco.evo.df)){
   z <- blgt$coefficients[1,1] + # intercept 
     as.matrix(x) %*% blgt$coefficients[2:(np+1),1] # α_0 + α_1*x_1 + α_i x_i + ... + α_n + x_n
   # Transform 
-  invlogit <- function(x) {exp(x)/(1+exp(x))}
   pr <- invlogit(z) # transormation to the logistic scale [0,1]; verify like this range(pr)
   # (bavgrad = coef1*sdev1*ag/rf;) => bavgrad = c4 * mean(pr*(1-pr)) * rw
   c7 <- mean(pr*(1-pr))*c4*rw # pr*(1-pr) refers to {\hat{p}*(1-\hat{p})}, c4 contains the estimates from the GLM and rw is the relative fitness. This line is an approximation of the average selection gradient
@@ -721,7 +710,6 @@ for(i in 1:nrow(my.eco.evo.df)){
   z2 <- predict(model.list[[i]], 
                 newdata=list(x = newx2), 
                 se.fit = TRUE)
-  invlogit <- function(x){exp(x)/(exp(x) + 1)}
   yhat <- invlogit(z2$fit)
   upper <- invlogit(z2$fit + z2$se.fit)
   lower <- invlogit(z2$fit - z2$se.fit)
@@ -751,7 +739,6 @@ for(i in 1:nrow(my.eco.evo.df)){
     newx$y = predict(model.st,
                      newx, 
                      type="response") 
-    logi = function(x){exp(x)/(1+exp(x))}
     newx$y.logi = logi(newx$y)
     # Adding the center part of the logistic regression 
     lines(x = newx$x,
@@ -771,7 +758,6 @@ for(i in 1:nrow(my.eco.evo.df)){
     newx$y = predict(model,
                      newx, 
                      type="response") 
-    logi = function(x){exp(x)/(1+exp(x))}
     newx$y.logi = logi(newx$y)
     
     # Adding the center part of the logistic regression 
@@ -861,24 +847,6 @@ for(i in 1:nrow(my.eco.evo.df)){
        ann=FALSE, frame =FALSE)
   axis(side=4, at = pretty(range(dpc1$y)))
   
-  
-  # my.line=function(x, model) {
-  #   out= model$coefficients[1] +
-  #     c(model$coefficients[2]*x) +
-  #     c(model$coefficients[3]*x^2)
-  #   logi=function(x){exp(x)/(1+exp(x))}
-  #   return(
-  #     logi(out))
-  # }
-  
-  
-  # curve(logi, newx, 
-  #       col = "red",
-  #       lwd=2,
-  #       add=TRUE,
-  #       xlim = range(ah.analysis$x))
-  # lines(x = x,y = my.line(x,model), col = "red",lwd=2)
-  # curve(predict(model,data.frame(x=x)), col = "red",lwd=2,add=TRUE)
   
   library(aod)
   if (linear.only) {
@@ -1268,7 +1236,6 @@ z1 <- predict(glm.out1,
                                    yea.var = 2009), 
               se.fit = TRUE)
 # Function that will transforme the Y values from linear scale to [0,1]
-invlogit <- function(x){exp(x)/(exp(x) + 1)}
 # This is the actual transformed data 
 yhat <-  invlogit(z1$fit)
 upper <- invlogit(z1$fit + z1$se.fit)
@@ -1340,7 +1307,6 @@ quad = dt[seq(2,nrow(dt),by = 2),]
 
 # Here I wanted to know what was the sample size for males and females all at once. 
 yr = c(2004:2006,2007, 2008:2011)
-source('src/initialize.R')
 for(i in 1:c(length(yr)-1)){
   yr.list <- c(yr[i],yr[i+jump])
   mdat <- prep.data(sp.keep = sp.list,
@@ -1396,10 +1362,3 @@ if(pdf.output){
   dev.off()
   dev.off()
 }
-
-
-
-
-
-
-
