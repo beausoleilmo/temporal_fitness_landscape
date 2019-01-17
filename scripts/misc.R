@@ -90,3 +90,27 @@ Mode <- function(x) {
   ux[which.max(tabulate(match(x, ux)))]
 }
 
+
+# Compute Galton's skewness measure for x ---------------------------------
+#  NOTE: this procedure assumes no x values are missing
+#
+
+galtonskew.proc <- function(x){
+  quarts <- as.numeric(quantile(x, probs = c(0.25, 0.5, 0.75)))
+  num <- quarts[1] + quarts[3] - 2*quarts[2]
+  denom <- quarts[3] - quarts[1]
+  gskew <- num/denom
+  gskew
+}
+
+
+# invlogit and logit ------------------------------------------------------
+# Function that will transforme the Y values from linear scale to [0,1]
+invlogit <- function(x){exp(x)/(exp(x) + 1)}
+logi <-     function(x){exp(x)/(1+exp(x))}
+
+
+# SE ----------------------------------------------------------------------
+stderr <- function(x) sqrt(var(x,na.rm=TRUE)/length(na.omit(x)))
+
+
