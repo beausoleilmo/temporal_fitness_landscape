@@ -1,19 +1,16 @@
 # In this script, I calculate the logistic regressions and then extract the selection gradients. From that, I'll be able to get the values I necesitate to compute the gradients in function of the environmental variables  
 
 # Preparation of variables and data  --------------------------------------
-source("~/scripts/logit.r")
-save.data = "~/Dropbox/finch_recap/v2/src/Saving RData/biotic.factors.on.survival_Andrew_meeting_changing_PCA_SCORE_for_only_fortis.RData"
-# Load the appropriate files 
-setwd('~/Dropbox/finch_recap/v2')
-source('~/École/École - En cours!/McGill University/McGill/A - Les cours, courses/Coding (R, latex, html)/1. R/1_Functions_(handy_ones)/PCA_custom.R')
-source('src/initialize.R')
-# load('data/bird.data.RData', verbose=TRUE)
-
+source('./scripts//initialize.R')
+source("./scripts/logit.r")
+source('./scripts/PCA_custom.R')
+save.data = "./output"
 # Select the interesting years 
 sp.list <- c('fortis')
 yr = c(2004:2014,2016:2018)
 jump = 1
 site.list <- "El Garrapatero"
+
 pdf.output <- FALSE
 find.peaks.and.valleys = FALSE
 splines <- TRUE
@@ -22,7 +19,6 @@ standard.ized = TRUE
 linear.only = TRUE  
 # If you want orthogonal X values: BEWARE! This is not the same as modeling an ORTHOGONAL regression 
 orthogonal.x = FALSE
-
 
 # prepare the variables that I'm going to record while iterating 
 fit.grad.table = list()
@@ -50,42 +46,11 @@ model.list = list()
 survived.list = list()
 
 # These were the relatively good values of lambda used 
-# exp.lambda = exp(seq(-8,-1,by =2))
 exp.lambda = exp(mean(c(-4,-5,-4,-4,-4,-4,-4,-4,-3,-6,-13,0)))
-# exp.lambda = exp(-2)
-load('data/bird.data.RData', verbose=TRUE)
-dput(names(bird.data))
-autopairs(x = bird.data[,c("Site", "Sex0","Site", "Sex0","Year",  "Species1",
-                           "Tarsus", "Wing.Chord", "Mass",  
-                           "MedianBeakLength", "MedianBeakWidth", "MedianBeakDepth",
-                           "PC1", "PC2" #"pc1.score.per.sp", "pc2.score.per.sp", "pc1.score.per.sp.eg", "pc2.score.per.sp.eg", "PC.body1", "PC.body2"
-)], main = "Traits all ground finches at EG and AB")
-autopairs(x = bird.data[bird.data$Species1 == "fortis", # & bird.data$Site == "El Garrapatero",
-                        c("Site", "Sex0","Site", "Sex0","Year",  "Species1",
-                          "Tarsus", "Wing.Chord", "Mass",
-                          "MedianBeakLength", "MedianBeakWidth", "MedianBeakDepth",
-                          "PC1", "PC2" #"pc1.score.per.sp", "pc2.score.per.sp", "pc1.score.per.sp.eg", "pc2.score.per.sp.eg", "PC.body1", "PC.body2"
-                        )], main = "Traits G. fortis at EG and AB")
-cor(bird.data[bird.data$Species1=="fortis","Mass"], 
-    bird.data[bird.data$Species1=="fortis","MedianBeakDepth"])
-cor(bird.data[bird.data$Species1=="fortis","Mass"], 
-    bird.data[bird.data$Species1=="fortis","MedianBeakLength"])
-cor(bird.data[bird.data$Species1=="fortis","Mass"], 
-    bird.data[bird.data$Species1=="fortis","MedianBeakWidth"])
-cor(bird.data[bird.data$Species1=="fortis","Mass"], 
-    bird.data[bird.data$Species1=="fortis","PC1"])
-plot((bird.data[bird.data$Species1=="fortis","Mass"])^(1/3), 
-     bird.data[bird.data$Species1=="fortis","PC1"])
-cor(bird.data$Mass,bird.data$MedianBeakDepth)
-cor(bird.data$Mass,bird.data$MedianBeakLength)
-cor(bird.data$Mass,bird.data$MedianBeakWidth)
-cor(bird.data$Mass,bird.data$Tarsus)
-# bird.fort = prep.data(sp.keep = sp.list,
-#                       yr.keep = c(2003:2014,2015,2016:2018),  
-#                       site.keep = site.list,
-#                       traits = "PC1")
+load('./data/bird.data.RData', verbose=TRUE)
+
 if(pdf.output){
-  pdf("~/Desktop/my.pca.just.fortis.pdf",height = 6,width = 15)
+  pdf("./output/my.pca.just.fortis.pdf",height = 6,width = 15)
   par(mfrow=c(1,3))
   res.pca.for2 = vegan::rda(bird.data[bird.data$Species1=="fortis", 
                                       c("MedianBeakLength", "MedianBeakWidth", 
@@ -93,9 +58,6 @@ if(pdf.output){
   res.pca.for3 = vegan::rda(bird.data[bird.data$Species1=="fortis" & bird.data$Site=="El Garrapatero",
                                       c("MedianBeakLength", "MedianBeakWidth", 
                                         "MedianBeakDepth")])
-  nrow(bird.data[bird.data$Species1=="fortis" & bird.data$Site=="El Garrapatero",
-                 c("MedianBeakLength", "MedianBeakWidth", 
-                   "MedianBeakDepth")])
   bd.EG =  bird.data[bird.data$Site=="El Garrapatero",]
   res.pca.all.sp.EG= vegan::rda(bd.EG[,c("MedianBeakLength", 
                                          "MedianBeakWidth", 
@@ -105,20 +67,14 @@ if(pdf.output){
                                          "MedianBeakWidth", 
                                          "MedianBeakDepth")])
   
-  length(bird.data[bird.data$Species1=="fortis","PC1"])
-  table(bird.data$Species1,bird.data$Year)
-  tab.sp.eg= table(bird.data[bird.data$Site=="El Garrapatero","Species1"], bird.data[bird.data$Site=="El Garrapatero","Year"])
-  write.csv(tab.sp.eg,"~/Desktop/nb.sp.eg.csv")
-  table(bird.data[bird.data$Species1=="fortis",]$Year)
-  table(bird.data[bird.data$Species1=="fortis"& bird.data$Site=="El Garrapatero",]$Year)
-  table(bird.data[bird.data$Species1=="fortis"& bird.data$Site=="Academy Bay",]$Year)
-  length(bird.data[bird.data$Species1=="fortis" & bird.data$Site=="El Garrapatero","PC1"])
+  tab.sp.eg= table(bird.data[bird.data$Site=="El Garrapatero","Species1"], 
+                   bird.data[bird.data$Site=="El Garrapatero","Year"])
+  write.csv(tab.sp.eg,"./output/nb.sp.eg.csv")
+  
   ores = mixtools::normalmixEM(bird.data[bird.data$Species1=="fortis","PC1"],
-                               # mu = c(center2,center1),
                                sigma = NULL, 
                                mean.constr = NULL, sd.constr = NULL,
                                epsilon = 1e-15, maxit = 1000, maxrestarts=50, 
-                               # verb = TRUE, 
                                fast=FALSE, ECM = FALSE,
                                arbmean = TRUE, arbvar = TRUE)
   
@@ -136,9 +92,6 @@ if(pdf.output){
   scores(res.pca.all.sp.EG, choices = 1:3, display = "species")
   
   res.pca.for$CA$u[,2] = -res.pca.for$CA$u[,2]
-  # res.pca.for$CA$u[,1] = -res.pca.for$CA$u[,1]
-  # res.pca.for$CA$v[,2] = -res.pca.for$CA$v[,2]
-  # res.pca.for$CA$v[,1] = -res.pca.for$CA$v[,1]
   custom_pca(res.pca.for, centered = TRUE,
              ordiellipse = TRUE,shape.points = 21,
              ordiellipse.vector = ores$posterior[,1]>.95,
@@ -147,9 +100,6 @@ if(pdf.output){
              vector.names = c("Median Beak Length",
                               "Median Beak Width",
                               "Median Beak Depth"))
-  
-  
-  
   custom_pca(res.pca.for2, centered = TRUE,
              ordiellipse = TRUE,shape.points = 21,
              # ordiellipse.vector = ores$posterior[,1]>.95,
@@ -182,13 +132,7 @@ if(pdf.output){
   round(scores(res.pca.for3, choices = 1:3, display = "species", scaling = 0),2)
   scores(res.pca.for3, choices = 1:3, display = "species")
   
-  #                    PC1     PC2    PC3
-  # MedianBeakLength 4.223  2.0071  0.166
-  # MedianBeakWidth  4.637 -0.4482 -1.391
-  # MedianBeakDepth  6.200 -1.0319  0.927
-  
-  
-  # res.pcabs is found in load('data/bird.data.RData', verbose=TRUE)
+  # res.pcabs is found in load('./data/bird.data.RData', verbose=TRUE)
   res.pcabs$CA$u[,1] = -res.pcabs$CA$u[,1]
   custom_pca(res.pcabs, centered = TRUE, 
              vector.to.colour.col = bird.data$Species1,
@@ -196,7 +140,6 @@ if(pdf.output){
              col.label = "black",
              shape.points = c(19,22,23,24),
              label.the.arrows = TRUE)
-  
   summary(res.pcabs)
   summary(res.pca.all.sp.EG)
   dev.off()
@@ -204,17 +147,16 @@ if(pdf.output){
 
 
 if(pdf.output){
-  pdf(paste0("~/Desktop/my.fit.land.short2_jump",
+  pdf(paste0("./output/my.fit.land.short2_jump",
              jump,"_",gsub('([[:punct:]])|\\s+','_',site.list),".pdf"),
       height = 7,
       width = 8)
 }
 
 # Function finding maximum and minimum of the fitness function  -----------
-### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### 
-### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### 
 par(mfrow=c(1,1))
-# For loop that will calculate the GAM, show the landscape and will let you select what is the maximum and minimum of the function 
+# For loop that will calculate the GAM, show the landscape and 
+# will let you select what is the maximum and minimum of the function 
 if(find.peaks.and.valleys){
   for(i in 1:c(length(yr)-1)){
     yr.list <- c(yr[i],yr[i+jump])
@@ -254,13 +196,10 @@ if(find.peaks.and.valleys){
     mbw = c(mdat$ind.vars$mbw) 
     band = as.character(mdat$ind.vars$band) 
     year.var = rep(yr.list[2],length(mdat$ind.vars$pc1))
-    # x = c(mdat$ind.vars$mbd) # Works for most years 
-    # x = c(mdat$ind.vars$mbw) # Works only for 2004-2005 and maybe 2008-2009
-    # x = c(mdat$ind.vars$mbl) # Works only for 2005-2006 and maybe 2006-2007, perhaps 2008-2009, 2009-2010
-    # x = c(mdat$ind.vars$mass) # Effectively works for only 2004-2005 and probably 2008-2009
     mydata = data.frame(x,y)
     dat.for.comparison.analysis = data.frame(x,y,year.var)
     full.data = c(full.data,list(dat.for.comparison.analysis))
+    
     # Fitting the GAM 
     z <- gam(y ~ s(x), 
              data = mydata, 
@@ -270,21 +209,8 @@ if(find.peaks.and.valleys){
     
     model.list = c(model.list,list(z))
     
-    # Main model 
-    # plot(z, se = 1, seWithMean = TRUE, rug = FALSE, shift = mean(predict(z)),
-    #      ylim = c(0,1),
-    #      trans = function(x){exp(x)/(1+exp(x))}, 
-    #      main = paste("GAM ±2SE binom","yr", i+2003, i+2003+jump, sep = " "))  # binomial data
     yr1 = substr(i+2003,3,4)
     yr2 = substr(i+2003+jump,3,4)
-    # Same thing but with all points 
-    # lambb.z=round(log(z$sp))
-    
-    # Show Gam with only points of individuals present 
-    # plot(z$fitted.values~x, 
-    #      cex = .8, pch = 21, 
-    #      bg = "black", col = "black")
-    # 
     oldxlist = c(oldxlist, list(x))
     oldzlist = c(oldzlist, list(z$fitted.values))
     old_beak_L_list = c(old_beak_L_list, list(mbd))
@@ -294,27 +220,28 @@ if(find.peaks.and.valleys){
     
     survived.list = c(survived.list, list(y))
     
-    lambb.z = #lamb=
-      round(log(exp.lambda))
+    lambb.z = round(log(exp.lambda))
     
     # Getting new x that is spaced evenly respecting the GAM function (fitness function) 
     newx <- seq(from = min(mydata$x), 
                 to = max(mydata$x), 
                 length.out = 2000)
+    
     # Using the model to generate the new response variable 
     z1 <- predict(z, 
                   newdata=list(x = newx), 
                   se.fit = TRUE)
+    
     # Function that will transforme the Y values from linear scale to [0,1]
     invlogit <- function(x){exp(x)/(exp(x) + 1)}
+    
     # This is the actual transformed data 
     yhat <- invlogit(z1$fit)
     upper <- invlogit(z1$fit + z1$se.fit)
     lower <- invlogit(z1$fit - z1$se.fit)
     
-    # satisfied...= "n"
-    # while(satisfied... != "y"){
-    # Here is the plot of the fitness function using the evenly spaced data (newx) and the response to it (yhat)
+    # Here is the plot of the fitness function using the evenly spaced 
+    # data (newx) and the response to it (yhat)
     plot(newx, yhat, type="l", 
          ylim = c(0,1), 
          xlab = "PC1",
@@ -324,10 +251,6 @@ if(find.peaks.and.valleys){
     # Adding error 
     lines(newx, upper, lty = 2)
     lines(newx, lower, lty = 2)
-    # par(new = TRUE)
-    # dtrait = density(x)
-    # plot(dtrait, xlim = range(x), col = "blue")
-    # These values are going to be emplemented in order to find the maximum (2 values) and minimum (1 value) of the fitness function 
     
     # find the minimum of the fitness function from the gam by clicking on BOTH sides of the highest visible peak and  the minimum value between the 2 peaks (valley) in the GAM  
     midd  = locator(n = 2)
@@ -358,8 +281,6 @@ if(find.peaks.and.valleys){
     # Make a record of all the expected response varaible from the evenly spaced X 
     newlist <- c(newlist, list(yhat))
     
-    # }
-    
     # Make a database for all these new varaibles 
     my.eco.evo.df=rbind(my.eco.evo.df,data.frame(mid = midd.list,
                                                  # yr = paste(yr.list,collapse = '_'), 
@@ -376,11 +297,15 @@ if(find.peaks.and.valleys){
   
   # dev.off()
   
-  eff = structure(c(36, 140, 212, 120, 52, 56, 132, 300, 128, 120, 128, 
-                    104, 30.2565802161513, 81.4673085182818, 81.4673085182818, 117.180771285717
-  ), .Names = c("2003", "2004", "2005", "2006", "2007", "2008", 
-                "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", 
-                "2017", "2018"))
+  eff = structure(c(36, 140, 212, 120, 52, 56, 
+                    132, 300, 128, 120, 128, 
+                    104, 30.2565802161513, 81.4673085182818, 
+                    81.4673085182818, 117.180771285717
+  ), .Names = c("2003", "2004", "2005", 
+                "2006", "2007", "2008", 
+                "2009", "2010", "2011", 
+                "2012", "2013", "2014", 
+                "2015", "2016", "2017", "2018"))
   my.eff = eff[names(eff)%in% yr]
   
   par(mfrow=c(2,2))
@@ -397,7 +322,6 @@ if(find.peaks.and.valleys){
                               0,0,0,0,
                               0)
   my.eco.evo.df[my.eco.evo.df$peak.height == "m",""]
-  # plot(1:3, col=1:3)
   # Keep only the relevant year combination
   my.eco.evo.df$effort = my.eff[1:c(length(my.eff)-1)]
   my.eco.evo.df$effort = my.eco.evo.df$effort/max(my.eco.evo.df$effort)
@@ -416,8 +340,6 @@ if(find.peaks.and.valleys){
   text(x = my.df$sum.preci.yr1,
        y = my.df$mid,
        labels = my.df$yr2, cex = .6, pos = 3)
-  # lines(x = (my.df$sum.preci.yr2),
-  #       y = (my.df$mid), lwd = .1)
   
   fct = log((mid))~log((sum.preci.yr2))
   lm.out2=lm(fct,data = my.df)
@@ -432,14 +354,10 @@ if(find.peaks.and.valleys){
   text(x = log(my.df$sum.preci.yr1),
        y = log(my.df$mid),
        labels = my.df$yr2, cex = .6, pos = 3)
-  # lines(x = log(my.df$sum.preci.yr2),
-  #       y = log(my.df$mid), lwd = .1)
-  # plot(lm.out2)
 } # End of if(find.peaks.and.valleys){
 
 
 # Save finding peaks ------------------------------------------------------
-# Save.once
 if(find.peaks.and.valleys){
   save(my.eco.evo.df,
        lm.out1,
@@ -457,8 +375,6 @@ if(find.peaks.and.valleys){
        full.data,
        file = save.data)
 }
-# dev.off()
-
 
 # Load the data  ----------------------------------------------------------
 load(save.data, 
@@ -489,19 +405,6 @@ compar= data.frame(pc1 = c(mixturemodel.out.groups1[mixturemodel.out.groups1$gr=
                    gr = c(rep(x = "1",length(which(mixturemodel.out.groups1$gr ==1))),
                           rep(x = "2",length(which(mixturemodel.out.groups2$gr ==1)))))
 
-# http://www.sthda.com/english/wiki/compare-multiple-sample-variances-in-r#compute-levenes-test-in-r
-# Statistical tests for comparing variances
-# There are many solutions to test for the equality (homogeneity) of variance across groups, including:
-#   F-test: 
-# Compare the variances of two samples. The data must be normally distributed.
-#   Bartlett’s test: 
-# Compare the variances of k samples, where k can be more than two samples.  The data must be normally distributed. The Levene test is an alternative to the Bartlett test that is less sensitive to departures from normality.
-#   Levene’s test: 
-# Compare the variances of k samples, where k can be more than two samples. It’s an alternative to the Bartlett’s test that is less sensitive to departures from normality.
-#   Fligner-Killeen test: 
-# a non-parametric test which is very robust against departures from normality.
-
-
 bartlett.test(pc1 ~ gr,data=compar)
 # If not normally distributed 
 car::leveneTest(pc1 ~ gr,data=compar)
@@ -513,57 +416,20 @@ for (i in 1:12) {
 }
 par(mfrow=c(1,1))
 
-
-my.eco.evo.df
-
 par(mfrow= c(2,1))
 mydf = data.frame(y = newlist[[1]], x = newx)
 where.peak1 = which(mydf$y == max(mydf$y[mydf$x>my.eco.evo.df$local.max.peak1[1]-.01  & 
                                            mydf$x<my.eco.evo.df$local.max.peak1[1]+.1]))
-# where.peak1 = 1
 
-# newlist[[1]] > my.eco.evo.df$local.max.peak1[1]
-# my.eco.evo.df$
-# round(newx,4) >= round(my.eco.evo.df$local.max.peak1[1],4)
 sub.newx = newx[where.peak1:nrow(mydf)]
 x = sub.newx
 q.out = lm(mydf$y[where.peak1:nrow(mydf)]~poly(x,2))
 summary(q.out)
 
-# with old data -----------------------------------------------------------
-# This is an attempt at looking at the QUADRATIC curves. But this is mathematically wrong and not advised. Andrew hasn't done that 
-# plot(mydf$y~newx, ylim=c(0,1), xlim=range(newx), type ="l")
-# curve(predict(q.out,data.frame(x=x)), col = "red",lwd=2,add=TRUE)
-# plot(mydf$y[where.peak1:nrow(mydf)]~newx[where.peak1:nrow(mydf)], ylim=c(0,1), xlim=range(newx), type ="l")
-# curve(predict(q.out,data.frame(x=x)), col = "red",lwd=2,add=TRUE)
-#
-# mydf = data.frame(y = oldzlist[[1]], x = oldxlist[[1]], survived.list[[1]])
-# mydf=mydf[order(mydf$x),]
-# mydf = mydf[mydf$survived.list..1.. == 1,]
-# where.peak1=which(mydf$y ==max(mydf$y[mydf$x>my.eco.evo.df$local.max.peak1[1]-.03  & 
-#                                         mydf$x<my.eco.evo.df$local.max.peak1[1]+.03]))
-# # where.peak1 = 2
-# x = mydf$x[where.peak1:nrow(mydf)]
-# q.out = lm(mydf$y[where.peak1:nrow(mydf)]~poly(x,2))
-# 
-# plot(mydf$y~mydf$x, 
-#      ylim=c(0,1), 
-#      xlim=range(newx), type ="l", ylab= "Survival", xlab ="PC1", 
-#      main ="fitting quadratic function \n to interesting section")
-# curve(predict(q.out,data.frame(x=x)), col = "red",lwd=2,add=TRUE)
-# plot(mydf$y[where.peak1:nrow(mydf)]~x,
-#      ylim=c(0,1), xlim=range(mydf$x), type ="l",
-#      ylab= "Survival", xlab ="PC1")
-# points(mydf$y[where.peak1:nrow(mydf)]~x, cex = .7, pch = 21, bg = "black")
-# curve(predict(q.out,data.frame(x=x)), col = "red",lwd=2,add=TRUE)
-# summary(q.out)
-
-
 # These are the points that I need! 
 par(mfrow=c(2,3))
 sample.size = NULL
 my.eco.evo.df = my.eco.evo.df[1:7,]
-
 
 for(i in 1:nrow(my.eco.evo.df)){
   ah.analysis = data.frame(y =  oldzlist[[i]], 
@@ -581,8 +447,6 @@ for(i in 1:nrow(my.eco.evo.df)){
   
   # ah.analysis = ah.analysis[!(ah.analysis$x >.8 & ah.analysis$x <1 &ah.analysis$app.surv == 1),]
   sub = ah.analysis[where.peak1:where.peak2,]
-  # plot(sub)
-  
   original.x = c(original.x,list(sub$x))
   my.x = sub$x
   my.mbl = sub$mbl
@@ -590,18 +454,18 @@ for(i in 1:nrow(my.eco.evo.df)){
   my.mbd = sub$mbd
   my.band = sub$band
   y = sub$app.surv
-  # plot(y~x)
   yea.var=rep(my.eco.evo.df[i,"yr2"],length(y))
   new.analysis.all.years = data.frame(my.x,y,yea.var,my.mbl,my.mbw,my.mbd,my.band)
   final.df.new.analysis = c(final.df.new.analysis,list(new.analysis.all.years))
-  # Preparing the data X (quadratic or not, orthongonal or not)
   
+  # Preparing the data X (quadratic or not, orthongonal or not)
   stderr <- function(x) sqrt(var(x,na.rm=TRUE)/length(na.omit(x)))
   if (standard.ized) {
     x.se = stderr(my.x)
     my.x = scale(my.x)
     x.mean = attr(my.x,"scaled:center")
     x.sd = attr(my.x,"scaled:scale")
+    
     # Retransformed data 
     x.st = data.frame(x = my.x*x.sd+x.mean, 
                       x2 = (my.x*x.sd+x.mean)^2)
@@ -619,26 +483,15 @@ for(i in 1:nrow(my.eco.evo.df)){
   
   all.ranges.x = c(all.ranges.x,list(range(x$x*x.sd+x.mean)))
   
-  
-  # According to endler (p.255), if the covariation between X and X^2 is 0, there is no skweness and therefore the univariate regression and multivariate regression coefficients are the same 
+  # According to endler (p.255), if the covariation between X and X^2 is 0, 
+  # there is no skweness and therefore the univariate regression and 
+  # multivariate regression coefficients are the same 
   library(moments)
   kurtosis(x$x)
   skewness(x$x) # 
   cov(x$x,(x$x-mean(x$x))^2)
-  # When standardized 
-  # 0.08425317
   
-  galtonskew.proc <- function(x){
-    #
-    #  Compute Galton's skewness measure for x
-    #  NOTE: this procedure assumes no x values are missing
-    #
-    quarts <- as.numeric(quantile(x, probs = c(0.25, 0.5, 0.75)))
-    num <- quarts[1] + quarts[3] - 2*quarts[2]
-    denom <- quarts[3] - quarts[1]
-    gskew <- num/denom
-    gskew
-  }
+
   galtonskew.proc(x$x)
   
   sample.size = c(sample.size,
