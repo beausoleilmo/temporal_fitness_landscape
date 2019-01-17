@@ -1,1 +1,1 @@
-# temporal_fitness_landscape
+# Scripts and documentation for the article "Temporally varying disruptive selection in Darwin’s finches"
