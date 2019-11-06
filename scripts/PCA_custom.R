@@ -1,5 +1,5 @@
 # Custom PCA plot ---------------------------------------------------------
-
+# Based on biplot function 
 custom_pca <- function(pca = pca, 
                        centered = FALSE, # If you want to separate a points axis and a vector axis 
                        main = 'PCA', # Name of the graph
