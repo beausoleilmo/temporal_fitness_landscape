@@ -382,7 +382,7 @@ for(i in 1:c(length(yr)-1)){
                     K.nots = 5, # Manually select the number of knots  
                     traits = c('PC1'))#, 'PC2')) # This is only for the spline 
   tab.int = data.frame(surv = mdat$X[,2],
-                       sex = droplevels(mdat$ind.vars$age),
+                       # sex = droplevels(mdat$ind.vars$age),
                        pc1 = mdat$ind.vars$pc1)
   yearly.number.of.id = c(yearly.number.of.id,list(tab.int))
 } 
@@ -394,9 +394,9 @@ for (i in 1:7) {
 }
 
 # Without cutting anything from the data 
-lapply(yearly.number.of.id, function(x) table(x$sex))
+# lapply(yearly.number.of.id, function(x) table(x$sex))
 lapply(yearly.number.of.id, function(x) table(x$surv))
-lapply(new.yearly.list, function(x) table(x$sex))
+# lapply(new.yearly.list, function(x) table(x$sex))
 lapply(new.yearly.list, function(x) table(x$surv))
 
 lapply(yearly.number.of.id, nrow)
