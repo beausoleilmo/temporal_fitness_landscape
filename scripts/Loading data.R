@@ -5,7 +5,7 @@ loading <- function(rdata_file)
 
 load.data <- function(model ="_pc2", 
                       path_model = NULL,
-                      path_fn = "~/Dropbox/finch_recap/v2/saved/",
+                      # path_fn = "./v2/saved/",
                       spline.logic = FALSE, 
                       yr.l = 2003:2014, 
                       sp.l =  c('fortis')#, 'fuliginosa', 'scandens', 'magnirostris')
@@ -13,7 +13,7 @@ load.data <- function(model ="_pc2",
 sp.list <- sp.l
 yr.list <- yr.l
 splines <- spline.logic
-setwd('~/Dropbox/finch_recap/v2')
+setwd('./v2')
 source('src/initialize.R')
 ## ----------------------------------------------------------------------
 loading('data/data.RData')
@@ -71,7 +71,7 @@ plot.fitness = function(xlab.p = 'pc2 value',
                         ylim.phi=c(-2,5),
                         pdf.print = TRUE) {
   if(pdf.print){
-  pdf(paste("~/Dropbox/finch_recap/v2/figures/fit.land/fitness_",
+  pdf(paste("./v2/figures/fit.land/fitness_",
             gsub(".RData","",gsub("out_","",fn)),
             ".pdf",sep = ""))}
   plot(NA, 
@@ -114,7 +114,7 @@ plot.fitness.3d = function(xlab.p = 'pc1 value',
                         pdf.print = TRUE) {
   library(rgl)
   if(pdf.print){
-    pdf(paste("~/Dropbox/finch_recap/v2/figures/fit.land/fitness_",
+    pdf(paste("./v2/figures/fit.land/fitness_",
               gsub(".RData","",gsub("out_","",fn)),
               ".pdf",sep = ""))}
   plot3d(x = my.data$pc1[my.data$X[,yr]==1],
