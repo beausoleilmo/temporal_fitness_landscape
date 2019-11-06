@@ -109,7 +109,7 @@ for (i in 1:length(numb.modl)) {
   mlistt = c(mlistt,rep(i,numb.modl[i]))
 }
 test.all.var$model = (mlistt)
-write.csv(test.all.var,"~/Desktop/New article to merge LUKE/Images/Tables/glm.model.p.values.coefficients.csv",na = "")
+write.csv(test.all.var,"./output/glm.model.p.values.coefficients.csv",na = "")
 
 # model with just interaction 
 # model GLMM precipitation (fixed), year (random)
