@@ -1,3 +1,4 @@
+source('./scripts//initialize.R')
 
 load("./output/logistic_gam_models.selection.RData", verbose = TRUE)
 # Model GLM with all data -------------------------------------------------
@@ -80,7 +81,9 @@ summary(glm.out35.1)
 
 df.final.df.new.analysis$prc.bfr = df.final.df.new.analysis$precipitation.yr.before
 glm.out102=summary(glm(y~x2 * prc.bfr,data=df.final.df.new.analysis,family="binomial"))
+
 glm.out103=summary(glm(y~x + x2 * prc.bfr,data=df.final.df.new.analysis,family="binomial"))
+
 glm.out104=summary(glm(y~(x + x2) * prc.bfr,data=df.final.df.new.analysis,family="binomial"))
 glm.out105=summary(glm(y~ x2+ prc.bfr,data=df.final.df.new.analysis,family="binomial"))
 glm.out106=summary(glm(y~ x + x2,data=df.final.df.new.analysis,family="binomial"))
@@ -164,7 +167,7 @@ model.sel2 = dredge(glm.out31)
 model.sel2 = dredge(glm.out31)
 # model.sel2 = dredge(glm.out13) #too much to look at! 
 model.avg(model.sel0,subset = delta < 4)
-model.avg(model.sel,subset = delta < 4)
+# model.avg(model.sel,subset = delta < 4)
 att.mod0 =attr(model.sel0,"model.calls")
 att.mod1 =attr(model.sel1,"model.calls")
 att.mod2 =attr(model.sel2,"model.calls")
